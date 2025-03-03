@@ -23,7 +23,7 @@ export default function Header() {
   
             {/* Mobile Menu Button */}
             <button 
-              className="md:hidden text-gray-600 hover:text-blue-500 focus:outline-none"
+              className="md:hidden text-gray-600 hover:text-blue-500 focus:outline-nonflex h-12 w-12 cursor-pointer select-none flex-col items-center justify-center gap-1"
               onClick={() => setMenuOpen(!menuOpen)}
             >
               {menuOpen ? "✖" : "☰"}
