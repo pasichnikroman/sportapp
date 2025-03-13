@@ -52,6 +52,9 @@ export default function RootLayout({
                     <li>
                       <a href="/login" className="hover:text-blue-500">Login</a>
                     </li>
+                    <li>
+                      <a href="/organization" className="hover:text-blue-500">Organization</a>
+                    </li>
                   </ul>
                 </div>
               </div>
