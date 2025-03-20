@@ -117,6 +117,9 @@ The **Sport Event App** is a platform designed to manage sports competitions, at
 ### Judge Management
 - Assign and track judges.
 
+### Athletes Management
+- create athletes and assign.
+
 ### Reports & Analytics
 - Generate and export reports on athlete performance and competition data.
 
@@ -125,8 +128,9 @@ The **Sport Event App** is a platform designed to manage sports competitions, at
 
 ## Development Phases
 ### Phase 1: MVP
-- Organization & athlete profiles
-- Competition management
+- ~~- Main admin panel , manage users, athletes, competitions, organizations , statistics (Python Django)~~
+- Organization , athlete profiles, competitions (frontend pages)
+- Users dashboard, as organizer (Organization & athlete profiles, competition, judges, statistic, match)
 - Basic statistics tracking
 
 ### Phase 2: Enhanced Features
@@ -141,3 +145,15 @@ The **Sport Event App** is a platform designed to manage sports competitions, at
 
 ---
 This README serves as a detailed specification for the **Sport Event App**. 🚀
+
+
+
+## 🚀 Getting Started
+
+
+### ** Install Dependencies**
+Make sure you have **Python 3**, **pip**, and **MySQL** installed.  
+Then install the required Python dependencies:
+
+```bash
+pip install -r requirements.txt
