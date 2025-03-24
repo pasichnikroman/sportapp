@@ -46,14 +46,14 @@ The **Sport Event App** is a platform designed to manage sports competitions, at
 
 ## Tech Stack
 ### Frontend
-- Web: React.js, Angular, or Vue.js
+- Web: React.js, Next,js
 - Mobile: React Native, Flutter, Swift/Kotlin
 
 ### Backend
-- Node.js (Express), Python (Django/Flask), or PHP (Laravel)
+- Node.js (Express), Python (Django/Flask)
 
 ### Database
-- PostgreSQL/MySQL for structured data
+- MySQL for structured data
 - MongoDB for real-time data
 
 ### Cloud Services
