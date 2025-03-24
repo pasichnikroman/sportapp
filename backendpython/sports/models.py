@@ -19,6 +19,7 @@ class User(AbstractUser):
 
 class Organization(models.Model):
     name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, blank=True)
     logo = models.ImageField(upload_to='organization_logos/', blank=True, null=True)
     description = models.TextField(blank=True)
     contact_email = models.EmailField()
@@ -30,6 +31,7 @@ class Organization(models.Model):
 
 class Athlete(models.Model):
     name = models.CharField(max_length=255 ,default="")
+    slug = models.SlugField(unique=True, blank=True)
     profile_image = models.ImageField(upload_to='athlete_profiles/', blank=True, null=True)
     bio = models.TextField(blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
