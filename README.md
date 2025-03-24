@@ -156,4 +156,8 @@ Make sure you have **Python 3**, **pip**, and **MySQL** installed.
 Then install the required Python dependencies:
 
 ```bash
-pip install -r requirements.txt
+sh ./install.sh
+sh ./run_app.sh
+
+
+
