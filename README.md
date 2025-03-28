@@ -160,4 +160,13 @@ sh ./install.sh
 sh ./run_app.sh
 
 
+### Django 
+```bash
+python3 manage.py createsuperuser
+
+python3 manage.py migrate
+
+
+
+
 

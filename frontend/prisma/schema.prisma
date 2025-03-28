@@ -1,0 +1,331 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  username      String         @unique
+  email         String         @unique
+  password      String
+  role          Role           @default(organization_manager)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  judge         Judge?
+  organizations Organization[] @relation("OwnerOrganizations")
+}
+
+model Organization {
+  id           Int           @id @default(autoincrement())
+  name         String
+  slug         String        @unique
+  logo         String?
+  description  String?
+  contactEmail String
+  ownerId      Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  athletes     Athlete[]
+  competitions Competition[]
+  owner        User          @relation("OwnerOrganizations", fields: [ownerId], references: [id])
+
+  @@index([ownerId], map: "Organization_ownerId_fkey")
+}
+
+model Athlete {
+  id             Int                        @id @default(autoincrement())
+  name           String
+  slug           String                     @unique
+  profileImage   String?
+  bio            String?
+  dateOfBirth    DateTime?
+  organizationId Int?
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+  organization   Organization?              @relation(fields: [organizationId], references: [id])
+  competitions   CompetitionParticipation[]
+  stats          Statistics[]
+
+  @@index([organizationId], map: "Athlete_organizationId_fkey")
+}
+
+model Competition {
+  id             Int                        @id @default(autoincrement())
+  name           String
+  date           DateTime
+  slug           String                     @unique
+  location       String
+  rules          String
+  organizationId Int
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+  organization   Organization               @relation(fields: [organizationId], references: [id])
+  participants   CompetitionParticipation[]
+  judges         JudgeAssignment[]
+
+  @@index([organizationId], map: "Competition_organizationId_fkey")
+}
+
+model Judge {
+  id              Int               @id @default(autoincrement())
+  userId          Int               @unique
+  certification   String?
+  experienceYears Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id])
+  assignments     JudgeAssignment[]
+}
+
+model CompetitionParticipation {
+  id            Int         @id @default(autoincrement())
+  competitionId Int
+  athleteId     Int
+  score         Float?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  athlete       Athlete     @relation(fields: [athleteId], references: [id])
+  competition   Competition @relation(fields: [competitionId], references: [id])
+
+  @@unique([competitionId, athleteId])
+  @@index([athleteId], map: "CompetitionParticipation_athleteId_fkey")
+}
+
+model Statistics {
+  id            Int      @id @default(autoincrement())
+  athleteId     Int
+  matchesPlayed Int      @default(0)
+  wins          Int      @default(0)
+  losses        Int      @default(0)
+  averageScore  Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  athlete       Athlete  @relation(fields: [athleteId], references: [id])
+
+  @@index([athleteId], map: "Statistics_athleteId_fkey")
+}
+
+model JudgeAssignment {
+  id            Int         @id @default(autoincrement())
+  competitionId Int
+  judgeId       Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  competition   Competition @relation(fields: [competitionId], references: [id])
+  judge         Judge       @relation(fields: [judgeId], references: [id])
+
+  @@index([competitionId], map: "JudgeAssignment_competitionId_fkey")
+  @@index([judgeId], map: "JudgeAssignment_judgeId_fkey")
+}
+
+model auth_group {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @unique(map: "name") @db.VarChar(150)
+  auth_group_permissions auth_group_permissions[]
+  sports_user_groups     sports_user_groups[]
+}
+
+model auth_group_permissions {
+  id              BigInt          @id @default(autoincrement())
+  group_id        Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissio_permission_id_84c5c92e_fk_auth_perm")
+  auth_group      auth_group      @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissions_group_id_b120cbf9_fk_auth_group_id")
+
+  @@unique([group_id, permission_id], map: "auth_group_permissions_group_id_permission_id_0cd325b0_uniq")
+  @@index([permission_id], map: "auth_group_permissio_permission_id_84c5c92e_fk_auth_perm")
+}
+
+model auth_permission {
+  id                           Int                            @id @default(autoincrement())
+  name                         String                         @db.VarChar(255)
+  content_type_id              Int
+  codename                     String                         @db.VarChar(100)
+  auth_group_permissions       auth_group_permissions[]
+  django_content_type          django_content_type            @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_permission_content_type_id_2f476e4b_fk_django_co")
+  sports_user_user_permissions sports_user_user_permissions[]
+
+  @@unique([content_type_id, codename], map: "auth_permission_content_type_id_codename_01ab375a_uniq")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model django_admin_log {
+  id                  Int                  @id @default(autoincrement())
+  action_time         DateTime             @db.DateTime(6)
+  object_id           String?              @db.LongText
+  object_repr         String               @db.VarChar(200)
+  action_flag         Int                  @db.UnsignedSmallInt
+  change_message      String               @db.LongText
+  content_type_id     Int?
+  user_id             BigInt
+  django_content_type django_content_type? @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "django_admin_log_content_type_id_c4bce8eb_fk_django_co")
+  sports_user         sports_user          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "django_admin_log_user_id_c564eba6_fk_sports_user_id")
+
+  @@index([content_type_id], map: "django_admin_log_content_type_id_c4bce8eb_fk_django_co")
+  @@index([user_id], map: "django_admin_log_user_id_c564eba6_fk_sports_user_id")
+}
+
+model django_content_type {
+  id               Int                @id @default(autoincrement())
+  app_label        String             @db.VarChar(100)
+  model            String             @db.VarChar(100)
+  auth_permission  auth_permission[]
+  django_admin_log django_admin_log[]
+
+  @@unique([app_label, model], map: "django_content_type_app_label_model_76bd3d3b_uniq")
+}
+
+model django_migrations {
+  id      BigInt   @id @default(autoincrement())
+  app     String   @db.VarChar(255)
+  name    String   @db.VarChar(255)
+  applied DateTime @db.DateTime(6)
+}
+
+model django_session {
+  session_key  String   @id @db.VarChar(40)
+  session_data String   @db.LongText
+  expire_date  DateTime @db.DateTime(6)
+
+  @@index([expire_date], map: "django_session_expire_date_a5c62663")
+}
+
+model sports_athlete {
+  id                              BigInt                            @id @default(autoincrement())
+  bio                             String                            @db.LongText
+  organization_id                 BigInt?
+  date_of_birth                   DateTime?                         @db.Date
+  name                            String                            @db.VarChar(255)
+  profile_image                   String?                           @db.VarChar(100)
+  slug                            String                            @unique(map: "slug") @db.VarChar(50)
+  sports_organization             sports_organization?              @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_athlete_organization_id_ea37b40c_fk_sports_or")
+  sports_competitionparticipation sports_competitionparticipation[]
+  sports_statistics               sports_statistics[]
+
+  @@index([organization_id], map: "sports_athlete_organization_id_ea37b40c_fk_sports_or")
+}
+
+model sports_competition {
+  id                              BigInt                            @id @default(autoincrement())
+  name                            String                            @db.VarChar(255)
+  date                            DateTime                          @db.Date
+  location                        String                            @db.VarChar(255)
+  rules                           String                            @db.LongText
+  organization_id                 BigInt
+  sports_organization             sports_organization               @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_competition_organization_id_83c2d9fa_fk_sports_or")
+  sports_competitionparticipation sports_competitionparticipation[]
+  sports_judgeassignment          sports_judgeassignment[]
+
+  @@index([organization_id], map: "sports_competition_organization_id_83c2d9fa_fk_sports_or")
+}
+
+model sports_competitionparticipation {
+  id                 BigInt             @id @default(autoincrement())
+  score              Float?
+  athlete_id         BigInt
+  competition_id     BigInt
+  sports_athlete     sports_athlete     @relation(fields: [athlete_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_competitionpa_athlete_id_9a21a827_fk_sports_at")
+  sports_competition sports_competition @relation(fields: [competition_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_competitionpa_competition_id_b1571863_fk_sports_co")
+
+  @@unique([competition_id, athlete_id], map: "sports_competitionpartic_competition_id_athlete_i_3733ad37_uniq")
+  @@index([athlete_id], map: "sports_competitionpa_athlete_id_9a21a827_fk_sports_at")
+}
+
+model sports_judge {
+  id                     BigInt                   @id @default(autoincrement())
+  certification          String                   @db.VarChar(255)
+  experience_years       Int
+  user_id                BigInt                   @unique(map: "user_id")
+  sports_user            sports_user              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_judge_user_id_422e9d88_fk_sports_user_id")
+  sports_judgeassignment sports_judgeassignment[]
+}
+
+model sports_judgeassignment {
+  id                 BigInt             @id @default(autoincrement())
+  competition_id     BigInt
+  judge_id           BigInt
+  sports_competition sports_competition @relation(fields: [competition_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_judgeassignme_competition_id_4f1d19f0_fk_sports_co")
+  sports_judge       sports_judge       @relation(fields: [judge_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_judgeassignment_judge_id_589b9b3c_fk_sports_judge_id")
+
+  @@index([competition_id], map: "sports_judgeassignme_competition_id_4f1d19f0_fk_sports_co")
+  @@index([judge_id], map: "sports_judgeassignment_judge_id_589b9b3c_fk_sports_judge_id")
+}
+
+model sports_organization {
+  id                 BigInt               @id @default(autoincrement())
+  name               String               @db.VarChar(255)
+  logo               String?              @db.VarChar(100)
+  description        String               @db.LongText
+  contact_email      String               @db.VarChar(254)
+  owner_id           BigInt
+  slug               String               @unique(map: "slug") @db.VarChar(50)
+  sports_athlete     sports_athlete[]
+  sports_competition sports_competition[]
+  sports_user        sports_user          @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_organization_owner_id_80debdab_fk_sports_user_id")
+
+  @@index([owner_id], map: "sports_organization_owner_id_80debdab_fk_sports_user_id")
+}
+
+model sports_statistics {
+  id             BigInt         @id @default(autoincrement())
+  matches_played Int
+  wins           Int
+  losses         Int
+  average_score  Float
+  athlete_id     BigInt
+  sports_athlete sports_athlete @relation(fields: [athlete_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_statistics_athlete_id_379591e4_fk_sports_athlete_id")
+
+  @@index([athlete_id], map: "sports_statistics_athlete_id_379591e4_fk_sports_athlete_id")
+}
+
+model sports_user {
+  id                           BigInt                         @id @default(autoincrement())
+  password                     String                         @db.VarChar(128)
+  last_login                   DateTime?                      @db.DateTime(6)
+  is_superuser                 Boolean
+  username                     String                         @unique(map: "username") @db.VarChar(150)
+  first_name                   String                         @db.VarChar(150)
+  last_name                    String                         @db.VarChar(150)
+  email                        String                         @db.VarChar(254)
+  is_staff                     Boolean
+  is_active                    Boolean
+  date_joined                  DateTime                       @db.DateTime(6)
+  role                         String                         @db.VarChar(20)
+  django_admin_log             django_admin_log[]
+  sports_judge                 sports_judge?
+  sports_organization          sports_organization[]
+  sports_user_groups           sports_user_groups[]
+  sports_user_user_permissions sports_user_user_permissions[]
+}
+
+model sports_user_groups {
+  id          BigInt      @id @default(autoincrement())
+  user_id     BigInt
+  group_id    Int
+  auth_group  auth_group  @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_user_groups_group_id_9a584c04_fk_auth_group_id")
+  sports_user sports_user @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_user_groups_user_id_7ed29840_fk_sports_user_id")
+
+  @@unique([user_id, group_id], map: "sports_user_groups_user_id_group_id_0d999401_uniq")
+  @@index([group_id], map: "sports_user_groups_group_id_9a584c04_fk_auth_group_id")
+}
+
+model sports_user_user_permissions {
+  id              BigInt          @id @default(autoincrement())
+  user_id         BigInt
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_user_user_per_permission_id_f80cd774_fk_auth_perm")
+  sports_user     sports_user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_user_user_permissions_user_id_d5dc9001_fk_sports_user_id")
+
+  @@unique([user_id, permission_id], map: "sports_user_user_permissions_user_id_permission_id_fc45d8ba_uniq")
+  @@index([permission_id], map: "sports_user_user_per_permission_id_f80cd774_fk_auth_perm")
+}
+
+enum Role {
+  admin
+  organization_manager
+  judge
+}
