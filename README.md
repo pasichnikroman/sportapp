@@ -172,3 +172,7 @@ python3 manage.py migrate
 ```bash
 npx prisma db pull 
 npx prisma generate  
+
+# delete generated prisma models
+rm -rf node_modules/.prisma node_modules/@prisma
+
