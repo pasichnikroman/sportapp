@@ -168,5 +168,7 @@ python3 manage.py migrate
 
 
 
-
-
+### Frontend - Prisma
+```bash
+npx prisma db pull 
+npx prisma generate  

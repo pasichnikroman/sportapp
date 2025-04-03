@@ -44,6 +44,7 @@ class Athlete(models.Model):
 class Competition(models.Model):
     name = models.CharField(max_length=255)
     date = models.DateField()
+    slug = models.SlugField(unique=True, blank=True)
     location = models.CharField(max_length=255)
     rules = models.TextField()
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="competitions")

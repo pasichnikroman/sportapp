@@ -1,4 +1,3 @@
-// frontend/src/app/competition/[slug]/page.tsx
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 
@@ -7,15 +6,25 @@ interface Props {
 }
 
 export default async function CompetitionPage({ params }: Props) {
-  const competition = await prisma.competition.findUnique({
+  console.log('Slug received:', params.slug);
+  console.log(Object.keys(prisma));
+  const competitions = await prisma.sports_competition.findMany();
+  console.log(competitions);
+
+
+  const competition = await prisma.sports_competition.findUnique({
     where: { slug: params.slug },
     include: {
-      organization: true, 
-      participants: {
-        include: { athlete: true },
+      sports_organization: true,
+      sports_competitionparticipation: {
+        include: { sports_athlete: true },
       },
-      judges: {
-        include: { judge: { include: { user: true } } },
+      sports_judgeassignment: {
+        include: {
+          sports_judge: {
+            include: { sports_user: true },
+          },
+        },
       },
     },
   });
@@ -28,19 +37,23 @@ export default async function CompetitionPage({ params }: Props) {
       <p><strong>Date:</strong> {competition.date.toDateString()}</p>
       <p><strong>Location:</strong> {competition.location}</p>
       <p><strong>Rules:</strong> {competition.rules}</p>
-      <p><strong>Organization:</strong> {competition.organization.name}</p>
+      <p><strong>Organization:</strong> {competition.sports_organization.name}</p>
 
       <h2>Participants</h2>
       <ul>
-        {competition.participants.map((p) => (
-          <li key={p.athlete.id}>{p.athlete.name} (Score: {p.score ?? 'N/A'})</li>
+        {competition.sports_competitionparticipation.map((p) => (
+          <li key={p.sports_athlete.id}>
+            {p.sports_athlete.name} (Score: {p.score ?? 'N/A'})
+          </li>
         ))}
       </ul>
 
       <h2>Judges</h2>
       <ul>
-        {competition.judges.map((j) => (
-          <li key={j.judge.id}>{j.judge.user.username}</li>
+        {competition.sports_judgeassignment.map((j) => (
+          <li key={j.sports_judge.id}>
+            {j.sports_judge.sports_user.username}
+          </li>
         ))}
       </ul>
     </div>

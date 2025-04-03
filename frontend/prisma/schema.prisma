@@ -7,121 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            Int            @id @default(autoincrement())
-  username      String         @unique
-  email         String         @unique
-  password      String
-  role          Role           @default(organization_manager)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  judge         Judge?
-  organizations Organization[] @relation("OwnerOrganizations")
-}
-
-model Organization {
-  id           Int           @id @default(autoincrement())
-  name         String
-  slug         String        @unique
-  logo         String?
-  description  String?
-  contactEmail String
-  ownerId      Int
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  athletes     Athlete[]
-  competitions Competition[]
-  owner        User          @relation("OwnerOrganizations", fields: [ownerId], references: [id])
-
-  @@index([ownerId], map: "Organization_ownerId_fkey")
-}
-
-model Athlete {
-  id             Int                        @id @default(autoincrement())
-  name           String
-  slug           String                     @unique
-  profileImage   String?
-  bio            String?
-  dateOfBirth    DateTime?
-  organizationId Int?
-  createdAt      DateTime                   @default(now())
-  updatedAt      DateTime                   @updatedAt
-  organization   Organization?              @relation(fields: [organizationId], references: [id])
-  competitions   CompetitionParticipation[]
-  stats          Statistics[]
-
-  @@index([organizationId], map: "Athlete_organizationId_fkey")
-}
-
-model Competition {
-  id             Int                        @id @default(autoincrement())
-  name           String
-  date           DateTime
-  slug           String                     @unique
-  location       String
-  rules          String
-  organizationId Int
-  createdAt      DateTime                   @default(now())
-  updatedAt      DateTime                   @updatedAt
-  organization   Organization               @relation(fields: [organizationId], references: [id])
-  participants   CompetitionParticipation[]
-  judges         JudgeAssignment[]
-
-  @@index([organizationId], map: "Competition_organizationId_fkey")
-}
-
-model Judge {
-  id              Int               @id @default(autoincrement())
-  userId          Int               @unique
-  certification   String?
-  experienceYears Int               @default(0)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  user            User              @relation(fields: [userId], references: [id])
-  assignments     JudgeAssignment[]
-}
-
-model CompetitionParticipation {
-  id            Int         @id @default(autoincrement())
-  competitionId Int
-  athleteId     Int
-  score         Float?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  athlete       Athlete     @relation(fields: [athleteId], references: [id])
-  competition   Competition @relation(fields: [competitionId], references: [id])
-
-  @@unique([competitionId, athleteId])
-  @@index([athleteId], map: "CompetitionParticipation_athleteId_fkey")
-}
-
-model Statistics {
-  id            Int      @id @default(autoincrement())
-  athleteId     Int
-  matchesPlayed Int      @default(0)
-  wins          Int      @default(0)
-  losses        Int      @default(0)
-  averageScore  Float    @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  athlete       Athlete  @relation(fields: [athleteId], references: [id])
-
-  @@index([athleteId], map: "Statistics_athleteId_fkey")
-}
-
-model JudgeAssignment {
-  id            Int         @id @default(autoincrement())
-  competitionId Int
-  judgeId       Int
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  competition   Competition @relation(fields: [competitionId], references: [id])
-  judge         Judge       @relation(fields: [judgeId], references: [id])
-
-  @@index([competitionId], map: "JudgeAssignment_competitionId_fkey")
-  @@index([judgeId], map: "JudgeAssignment_judgeId_fkey")
-}
-
 model auth_group {
   id                     Int                      @id @default(autoincrement())
   name                   String                   @unique(map: "name") @db.VarChar(150)
@@ -216,6 +101,7 @@ model sports_competition {
   location                        String                            @db.VarChar(255)
   rules                           String                            @db.LongText
   organization_id                 BigInt
+  slug                            String                            @unique(map: "slug") @db.VarChar(50)
   sports_organization             sports_organization               @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "sports_competition_organization_id_83c2d9fa_fk_sports_or")
   sports_competitionparticipation sports_competitionparticipation[]
   sports_judgeassignment          sports_judgeassignment[]
@@ -322,10 +208,4 @@ model sports_user_user_permissions {
 
   @@unique([user_id, permission_id], map: "sports_user_user_permissions_user_id_permission_id_fc45d8ba_uniq")
   @@index([permission_id], map: "sports_user_user_per_permission_id_f80cd774_fk_auth_perm")
-}
-
-enum Role {
-  admin
-  organization_manager
-  judge
 }
